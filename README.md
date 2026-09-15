@@ -2,6 +2,17 @@
 
 An insurance Policy Claims Tracker — a line-of-business application for adjusters and administrators to manage insurance policies and the claims filed against them.
 
+## Project layout
+
+```text
+.
+├── backend-api/   # Express + MongoDB API (this is where you run npm commands)
+├── docs/          # Architecture and design documentation
+└── README.md
+```
+
+All application code, `package.json`, and environment files live under [`backend-api/`](backend-api/). Every command below is run from that directory.
+
 ## Tech stack
 
 - **Runtime:** Node.js + TypeScript
@@ -20,9 +31,10 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit togeth
 
 ## Setup
 
-1. Install dependencies:
+1. Move into the app directory and install dependencies:
 
    ```bash
+   cd backend-api
    npm install
    ```
 
