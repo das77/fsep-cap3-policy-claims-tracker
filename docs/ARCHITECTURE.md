@@ -64,7 +64,7 @@ sequenceDiagram
     C->>A: POST /register { name, email, password }
     A->>U: create() (password hashed in pre("save"))
     U-->>A: user document
-    A-->>C: 201 { token, user }
+    A-->>C: 201 { user } (no token — client must log in separately)
 
     C->>A: POST /login { email, password }
     A->>U: findOne + comparePassword()

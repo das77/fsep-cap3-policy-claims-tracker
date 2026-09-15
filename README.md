@@ -82,7 +82,7 @@ All routes are mounted under `/api`. Every route except `/api/health` and `/api/
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/api/health` | Server + database connectivity check |
-| POST | `/api/auth/register` | Create a user account, returns a JWT |
+| POST | `/api/auth/register` | Create a user account (does not return a token — log in separately) |
 | POST | `/api/auth/login` | Authenticate, returns a JWT |
 | GET | `/api/auth/me` | Return the authenticated user's profile |
 | GET | `/api/policies` | List policies (filter by `type`, `status`, `search`; paginated) |
