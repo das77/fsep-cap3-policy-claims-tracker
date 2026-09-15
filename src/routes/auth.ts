@@ -26,9 +26,8 @@ router.post(
     }
 
     const user = await User.create({ name, email, password });
-    const token = generateToken(user);
 
-    res.status(201).json({ token, user });
+    res.status(201).json({ user });
   },
 );
 
