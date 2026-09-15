@@ -3,23 +3,8 @@ import { Link } from "react-router-dom";
 import api from "../api";
 import { getErrorMessage } from "../errorMessage";
 import { useAuth } from "../useAuth";
+import { CLAIM_STATUS_COLORS, CLAIM_STATUS_LABELS } from "../claimStatus";
 import type { ClaimStatus, DashboardStats, Policy } from "../types";
-
-const CLAIM_STATUS_LABELS: Record<ClaimStatus, string> = {
-  submitted: "Submitted",
-  "under-review": "Under Review",
-  approved: "Approved",
-  denied: "Denied",
-  closed: "Closed",
-};
-
-const CLAIM_STATUS_COLORS: Record<ClaimStatus, string> = {
-  submitted: "#3b82f6",
-  "under-review": "#f59e0b",
-  approved: "#22c55e",
-  denied: "#dc2626",
-  closed: "#6b7280",
-};
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -81,9 +66,12 @@ export default function Dashboard() {
     <section className="dashboard-page">
       <header className="dashboard-header">
         <h1>Welcome, {user.name}</h1>
-        <button type="button" onClick={logout}>
-          Log out
-        </button>
+        <nav className="dashboard-nav">
+          <Link to="/claims">Claims</Link>
+          <button type="button" onClick={logout}>
+            Log out
+          </button>
+        </nav>
       </header>
 
       {loading && <p>Loading dashboard…</p>}
