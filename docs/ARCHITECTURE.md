@@ -69,7 +69,7 @@ sequenceDiagram
     C->>A: POST /login { email, password }
     A->>U: findOne + comparePassword()
     U-->>A: match / no match
-    A-->>C: 200 { token, user } or 401
+    A-->>C: 200 { token, expiresAt, user } or 401
 
     C->>R: GET /policies (Authorization: Bearer token)
     R->>R: authenticate middleware verifies token
