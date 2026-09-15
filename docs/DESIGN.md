@@ -2,6 +2,8 @@
 
 This document covers the data model and API design decisions behind the tracker, and the tradeoffs made along the way. For how the code is wired together, see [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
+> All file paths below (`src/...`, etc.) are relative to [`backend-api/`](../backend-api/), where the application lives.
+
 ## Data model
 
 ```mermaid

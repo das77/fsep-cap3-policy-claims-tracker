@@ -1,5 +1,7 @@
 # Architecture
 
+> All file paths below (`src/...`, `package.json`, etc.) are relative to [`backend-api/`](../backend-api/), where the application lives.
+
 ## Overview
 
 A single Express application (`src/server.ts`) exposes a JSON REST API backed by MongoDB. There is no separate frontend in this repository — the API is designed to be consumed by a client application.
