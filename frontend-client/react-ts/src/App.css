@@ -73,3 +73,125 @@
   font-size: 0.9em;
   margin-bottom: 8px;
 }
+
+.dashboard-page {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 32px 40px;
+  text-align: left;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 28px;
+  text-align: left;
+}
+
+.dashboard-header button {
+  margin-left: auto;
+  text-align: right;
+}
+
+.dashboard-header button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.stat-card-label {
+  font-size: 0.85em;
+  color: var(--text);
+}
+
+.stat-card-value {
+  font-size: 1.6em;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.status-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 32px;
+}
+
+.status-chart-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 40px;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-chart-label {
+  font-size: 0.9em;
+}
+
+.status-chart-track {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--accent-bg);
+  overflow: hidden;
+}
+
+.status-chart-bar {
+  height: 100%;
+  min-width: 2px;
+  border-radius: 7px;
+  background: var(--accent);
+}
+
+.status-chart-count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.recent-claims-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 32px;
+}
+
+.recent-claims-table th,
+.recent-claims-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.recent-claims-table th {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+.recent-claims-table a {
+  color: var(--accent);
+}
