@@ -49,6 +49,15 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit togeth
    - 5 policies across auto/home/life types and active/expired/cancelled statuses
    - 6 claims spread across every status, several with notes
 
+   ```mermaid
+   pie showData title Seeded claims by status
+       "submitted" : 2
+       "under-review" : 1
+       "approved" : 1
+       "denied" : 1
+       "closed" : 1
+   ```
+
 4. Start the dev server:
 
    ```bash

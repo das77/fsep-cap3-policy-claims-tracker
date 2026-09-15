@@ -4,6 +4,46 @@ This document covers the data model and API design decisions behind the tracker,
 
 ## Data model
 
+```mermaid
+erDiagram
+    USER ||--o{ POLICY : owns
+    USER ||--o{ CLAIM : "assigned to"
+    USER ||--o{ CLAIM_NOTE : authors
+    POLICY ||--o{ CLAIM : "filed against"
+    CLAIM ||--o{ CLAIM_NOTE : has
+
+    USER {
+        string name
+        string email
+        string password
+        string role
+    }
+    POLICY {
+        string policyNumber
+        string holderName
+        string type
+        number premium
+        string status
+        date effectiveDate
+        date expirationDate
+        ObjectId owner
+    }
+    CLAIM {
+        string claimNumber
+        ObjectId policy
+        string description
+        date incidentDate
+        number amount
+        string status
+        ObjectId assignedTo
+    }
+    CLAIM_NOTE {
+        ObjectId author
+        string text
+        date createdAt
+    }
+```
+
 ### User
 
 | Field | Type | Notes |
@@ -50,6 +90,20 @@ The password is only rehashed when `isModified("password")` is true, so updating
 > **Known tradeoff:** this counter approach has a race condition under concurrent inserts — two claims saved at the same instant could compute the same count and collide on the unique index. At this project's expected scale (a handful of adjusters filing claims, not a high-throughput system) that's an acceptable risk; a dedicated atomic counter document (`findOneAndUpdate` with `$inc`) would be the fix if that assumption changes. The seed script (`src/seed.ts`) sidesteps this entirely by creating claims sequentially rather than in parallel.
 
 Notes are embedded rather than a separate collection because they're always accessed in the context of their claim, never independently queried or paginated — embedding avoids an extra join/populate for what is effectively a claim's activity log.
+
+**Typical status lifecycle** (shown for reference — the API does **not** currently enforce these transitions; `PUT /api/claims/:id` accepts any valid enum value regardless of the claim's current status):
+
+```mermaid
+stateDiagram-v2
+    state "under-review" as under_review
+    [*] --> submitted
+    submitted --> under_review
+    submitted --> denied
+    under_review --> approved
+    under_review --> denied
+    approved --> closed
+    denied --> closed
+```
 
 ## API design
 

@@ -4,20 +4,12 @@
 
 A single Express application (`src/server.ts`) exposes a JSON REST API backed by MongoDB. There is no separate frontend in this repository — the API is designed to be consumed by a client application.
 
-```text
-Client
-  │  HTTP (JSON)
-  ▼
-Express app (src/server.ts)
-  │  cors → express.json() → routes → 404 handler → errorHandler
-  ▼
-Routers (src/routes/*.ts)
-  │  authenticate middleware → validate middleware → handler
-  ▼
-Mongoose models (src/models/*.ts)
-  │
-  ▼
-MongoDB
+```mermaid
+flowchart TD
+    Client["Client"] -->|"HTTP (JSON)"| App["Express app (src/server.ts)"]
+    App -->|"cors → express.json() → routes → 404 handler → errorHandler"| Routers["Routers (src/routes/*.ts)"]
+    Routers -->|"authenticate → validate → handler"| Models["Mongoose models (src/models/*.ts)"]
+    Models --> DB[("MongoDB")]
 ```
 
 ## Entry point
@@ -35,8 +27,12 @@ The server intentionally does **not** pass a callback to `app.listen()`. Express
 
 Every protected route follows the same shape:
 
-```
-authenticate  →  validate([...chains])  →  route handler
+```mermaid
+flowchart LR
+    Req(["Incoming request"]) --> Auth["authenticate"]
+    Auth --> Val["validate([...chains])"]
+    Val --> Handler["route handler"]
+    Handler --> Res(["Response"])
 ```
 
 - **`authenticate`** (`src/middleware/auth.ts`) reads `Authorization: Bearer <token>`, verifies it with `JWT_SECRET`, loads the user, and attaches it as `req.user`. Returns 401 for any missing/invalid/expired token or a user that no longer exists.
@@ -45,12 +41,42 @@ authenticate  →  validate([...chains])  →  route handler
 
 Errors that reach the end of the chain are handled centrally by `src/middleware/errorHandler.ts`:
 
-| Error | Response |
-|---|---|
-| Mongoose `ValidationError` | 400, field-level messages |
-| Mongoose `CastError` (bad ObjectId) | 400 |
-| MongoDB duplicate key (`code: 11000`) | 409, names the conflicting field |
-| Anything else | 500, generic message (the real error is only logged server-side, never returned to the client) |
+```mermaid
+flowchart TD
+    Err(["Error reaches errorHandler"]) --> Q1{"instanceof<br/>ValidationError?"}
+    Q1 -->|yes| R1["400 + field-level messages"]
+    Q1 -->|no| Q2{"instanceof<br/>CastError?"}
+    Q2 -->|yes| R2["400"]
+    Q2 -->|no| Q3{"code === 11000<br/>(duplicate key)?"}
+    Q3 -->|yes| R3["409 + conflicting field"]
+    Q3 -->|no| R4["500, generic message<br/>(logged server-side only)"]
+```
+
+## Auth flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant A as /api/auth routes
+    participant U as User model
+    participant R as Protected route (e.g. /api/policies)
+
+    C->>A: POST /register { name, email, password }
+    A->>U: create() (password hashed in pre("save"))
+    U-->>A: user document
+    A-->>C: 201 { token, user }
+
+    C->>A: POST /login { email, password }
+    A->>U: findOne + comparePassword()
+    U-->>A: match / no match
+    A-->>C: 200 { token, user } or 401
+
+    C->>R: GET /policies (Authorization: Bearer token)
+    R->>R: authenticate middleware verifies token
+    R->>U: findById(payload.id)
+    U-->>R: user
+    R-->>C: 200 (req.user attached) or 401
+```
 
 ## Data layer
 
@@ -60,7 +86,7 @@ Models live in `src/models/` and are plain Mongoose schemas:
 - **`Policy`** — owned by a `User` (`owner` ref); `policyNumber` is uppercased/trimmed and unique.
 - **`Claim`** — references a `Policy` and an `assignedTo` `User`; auto-generates a sequential `claimNumber` (`CLM-1000`, `CLM-1001`, …) in a `pre("save")` hook based on `countDocuments()`, and embeds `notes` as sub-documents (`{ author, text, createdAt }`).
 
-See [`DESIGN.md`](DESIGN.md) for the reasoning behind these choices.
+See [`DESIGN.md`](DESIGN.md) for the reasoning behind these choices, including an entity-relationship diagram of how the three models relate.
 
 ## Testing
 
