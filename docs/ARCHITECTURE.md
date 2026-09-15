@@ -64,12 +64,12 @@ sequenceDiagram
     C->>A: POST /register { name, email, password }
     A->>U: create() (password hashed in pre("save"))
     U-->>A: user document
-    A-->>C: 201 { token, user }
+    A-->>C: 201 { user } (no token — client must log in separately)
 
     C->>A: POST /login { email, password }
     A->>U: findOne + comparePassword()
     U-->>A: match / no match
-    A-->>C: 200 { token, user } or 401
+    A-->>C: 200 { token, expiresAt, user } or 401
 
     C->>R: GET /policies (Authorization: Bearer token)
     R->>R: authenticate middleware verifies token

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import jwt from "jsonwebtoken";
-import { generateToken } from "../token";
+import { generateToken, getTokenTimestamps } from "../token";
 import type { IUser } from "../../models/User";
 
 describe("generateToken", () => {
@@ -27,7 +27,7 @@ describe("generateToken", () => {
     expect(decoded.role).toBe("admin");
   });
 
-  it("sets a 7 day expiry", () => {
+  it("sets a 60 minute expiry", () => {
     const fakeUser = {
       _id: { toString: () => "507f1f77bcf86cd799439011" },
       role: "adjuster",
@@ -36,7 +36,21 @@ describe("generateToken", () => {
     const token = generateToken(fakeUser);
     const decoded = jwt.verify(token, "test-secret") as { iat: number; exp: number };
 
-    expect(decoded.exp - decoded.iat).toBe(7 * 24 * 60 * 60);
+    expect(decoded.exp - decoded.iat).toBe(60 * 60);
+  });
+
+  it("returns token creation and expiration timestamps", () => {
+    const fakeUser = {
+      _id: { toString: () => "507f1f77bcf86cd799439011" },
+      role: "adjuster",
+    } as unknown as IUser;
+
+    const token = generateToken(fakeUser);
+    const timestamps = getTokenTimestamps(token);
+    const decoded = jwt.verify(token, "test-secret") as { iat: number; exp: number };
+
+    expect(timestamps.createdAt).toBe(new Date(decoded.iat * 1000).toISOString());
+    expect(timestamps.expiresAt).toBe(new Date(decoded.exp * 1000).toISOString());
   });
 
   it("throws when JWT_SECRET is not configured", () => {

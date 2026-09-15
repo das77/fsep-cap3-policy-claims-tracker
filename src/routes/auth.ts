@@ -3,7 +3,7 @@ import { body } from "express-validator";
 import User from "../models/User";
 import { authenticate } from "../middleware/auth";
 import { validate } from "../middleware/validate";
-import { generateToken } from "../utils/token";
+import { generateToken, getTokenTimestamps } from "../utils/token";
 
 const router = Router();
 
@@ -26,9 +26,8 @@ router.post(
     }
 
     const user = await User.create({ name, email, password });
-    const token = generateToken(user);
 
-    res.status(201).json({ token, user });
+    res.status(201).json({ user });
   },
 );
 
@@ -48,8 +47,9 @@ router.post(
     }
 
     const token = generateToken(user);
+    const { expiresAt } = getTokenTimestamps(token);
 
-    res.status(200).json({ token, user });
+    res.status(200).json({ token, expiresAt, user });
   },
 );
 

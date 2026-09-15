@@ -124,16 +124,23 @@ router.put(
     const { policyNumber, holderName, type, premium, status, effectiveDate, expirationDate } =
       req.body;
 
-    const policy = await Policy.findByIdAndUpdate(
-      req.params.id,
-      { policyNumber, holderName, type, premium, status, effectiveDate, expirationDate },
-      { new: true, runValidators: true },
-    );
+    const policy = await Policy.findById(req.params.id);
 
     if (!policy) {
       res.status(404).json({ message: "Policy not found" });
       return;
     }
+
+    Object.assign(policy, {
+      policyNumber,
+      holderName,
+      type,
+      premium,
+      status,
+      effectiveDate,
+      expirationDate,
+    });
+    await policy.save();
 
     res.status(200).json({ policy });
   },
