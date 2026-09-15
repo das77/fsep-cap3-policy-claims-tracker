@@ -15,9 +15,10 @@ router.post(
     body("password")
       .isLength({ min: 8 })
       .withMessage("Password must be at least 8 characters"),
+    body("role").optional().isIn(["adjuster", "admin"]).withMessage("Invalid role"),
   ]),
   async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -25,7 +26,7 @@ router.post(
       return;
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, ...(role && { role }) });
 
     res.status(201).json({ user });
   },
