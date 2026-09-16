@@ -16,10 +16,19 @@ export const CLAIM_STATUS_LABELS: Record<ClaimStatus, string> = {
   closed: "Closed",
 };
 
+/** Semantic tone for each status — drives both badge color and chart bar color. */
+export const CLAIM_STATUS_TONE: Record<ClaimStatus, string> = {
+  submitted: "info",
+  "under-review": "warning",
+  approved: "success",
+  denied: "danger",
+  closed: "neutral",
+};
+
 export const CLAIM_STATUS_COLORS: Record<ClaimStatus, string> = {
-  submitted: "#3b82f6",
-  "under-review": "#f59e0b",
-  approved: "#22c55e",
-  denied: "#dc2626",
-  closed: "#6b7280",
+  submitted: "var(--color-info)",
+  "under-review": "var(--color-warning)",
+  approved: "var(--color-success)",
+  denied: "var(--color-danger)",
+  closed: "var(--color-neutral)",
 };
