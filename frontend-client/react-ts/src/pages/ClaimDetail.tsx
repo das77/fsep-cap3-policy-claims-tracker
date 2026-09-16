@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api";
 import { getErrorMessage } from "../errorMessage";
 import { useAuth } from "../useAuth";
-import { CLAIM_STATUSES, CLAIM_STATUS_LABELS } from "../claimStatus";
+import StatusBadge from "../StatusBadge";
+import { CLAIM_STATUSES, CLAIM_STATUS_LABELS, CLAIM_STATUS_TONE } from "../claimStatus";
 import type { Claim, ClaimStatus, Policy, User } from "../types";
 
 /** GET /claims/:id always populates `policy` and `assignedTo`. */
@@ -136,7 +137,7 @@ export default function ClaimDetail() {
   }
 
   return (
-    <section className="claim-detail-page">
+    <section className="page claim-detail-page">
       <Link to="/claims" className="claim-detail-back">
         ← Back to Claims
       </Link>
@@ -151,20 +152,30 @@ export default function ClaimDetail() {
 
       {claim && (
         <>
-          <header className="claim-detail-header">
+          <header className="page-header">
             <h1>{claim.claimNumber}</h1>
             {!confirmingDelete ? (
-              <button type="button" className="danger" onClick={() => setConfirmingDelete(true)}>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => setConfirmingDelete(true)}
+              >
                 Delete Claim
               </button>
             ) : (
               <div className="claim-delete-confirm">
                 <span>Delete this claim?</span>
-                <button type="button" className="danger" onClick={handleDelete} disabled={deleting}>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
                   {deleting ? "Deleting…" : "Confirm Delete"}
                 </button>
                 <button
                   type="button"
+                  className="btn"
                   onClick={() => setConfirmingDelete(false)}
                   disabled={deleting}
                 >
@@ -180,7 +191,7 @@ export default function ClaimDetail() {
             </p>
           )}
 
-          <dl className="claim-detail-fields">
+          <dl className="card claim-detail-fields">
             <div>
               <dt>Policy</dt>
               <dd>
@@ -205,7 +216,12 @@ export default function ClaimDetail() {
             </div>
             <div>
               <dt>Status</dt>
-              <dd>{CLAIM_STATUS_LABELS[claim.status]}</dd>
+              <dd>
+                <StatusBadge
+                  label={CLAIM_STATUS_LABELS[claim.status]}
+                  tone={CLAIM_STATUS_TONE[claim.status]}
+                />
+              </dd>
             </div>
           </dl>
 
@@ -227,6 +243,7 @@ export default function ClaimDetail() {
             </select>
             <button
               type="button"
+              className="btn btn-primary"
               onClick={handleUpdateStatus}
               disabled={updatingStatus || statusValue === claim.status}
             >
@@ -243,7 +260,7 @@ export default function ClaimDetail() {
           <ul className="claim-notes">
             {claim.notes.map((note, index) => (
               // Notes have no id of their own — createdAt + index is stable within a render.
-              <li key={`${note.createdAt}-${index}`} className="claim-note">
+              <li key={`${note.createdAt}-${index}`} className="card claim-note">
                 <div className="claim-note-meta">
                   <span className="claim-note-author">
                     {authorName(typeof note.author === "string" ? note.author : note.author._id)}
@@ -272,7 +289,7 @@ export default function ClaimDetail() {
                 {noteError}
               </p>
             )}
-            <button type="submit" disabled={addingNote}>
+            <button type="submit" className="btn btn-primary" disabled={addingNote}>
               {addingNote ? "Adding…" : "Add Note"}
             </button>
           </form>
