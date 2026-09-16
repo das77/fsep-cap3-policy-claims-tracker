@@ -1,8 +1,10 @@
 import { useEffect, useState, type SubmitEvent } from "react";
 import api from "../api";
 import { getErrorMessage } from "../errorMessage";
+import StatusBadge from "../StatusBadge";
 import {
   POLICY_STATUS_LABELS,
+  POLICY_STATUS_TONE,
   POLICY_STATUSES,
   POLICY_TYPE_LABELS,
   POLICY_TYPES,
@@ -144,11 +146,12 @@ export default function Policies() {
   }
 
   return (
-    <section className="policies-page">
-      <header className="policies-header">
+    <section className="page policies-page">
+      <header className="page-header">
         <h1>Policies</h1>
         <button
           type="button"
+          className="btn btn-primary"
           onClick={() => setShowNewPolicyForm((shown) => !shown)}
         >
           {showNewPolicyForm ? "Cancel" : "New Policy"}
@@ -156,7 +159,7 @@ export default function Policies() {
       </header>
 
       {showNewPolicyForm && (
-        <form className="new-policy-form" onSubmit={handleCreatePolicy}>
+        <form className="card new-policy-form" onSubmit={handleCreatePolicy}>
           <div className="new-policy-form-field">
             <label htmlFor="policy-number">Policy Number</label>
             <input
@@ -252,7 +255,7 @@ export default function Policies() {
             </p>
           )}
 
-          <button type="submit" disabled={submitting}>
+          <button type="submit" className="btn" disabled={submitting}>
             {submitting ? "Creating…" : "Create Policy"}
           </button>
         </form>
@@ -299,67 +302,75 @@ export default function Policies() {
         </p>
       )}
 
-      <table className="policies-table">
-        <thead>
-          <tr>
-            <th>Policy #</th>
-            <th>Holder</th>
-            <th>Type</th>
-            <th>Premium</th>
-            <th>Status</th>
-            <th>Effective</th>
-            <th>Expiration</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {policies.map((policy) => (
-            <tr key={policy._id}>
-              <td>{policy.policyNumber}</td>
-              <td>{policy.holderName}</td>
-              <td>{POLICY_TYPE_LABELS[policy.type]}</td>
-              <td>{currencyFormatter.format(policy.premium)}</td>
-              <td>{POLICY_STATUS_LABELS[policy.status]}</td>
-              <td>{dateFormatter.format(new Date(policy.effectiveDate))}</td>
-              <td>{dateFormatter.format(new Date(policy.expirationDate))}</td>
-              <td className="policies-table-actions">
-                {confirmingDeleteId === policy._id ? (
-                  <span className="policy-delete-confirm">
-                    <button
-                      type="button"
-                      className="danger"
-                      onClick={() => handleDelete(policy._id)}
-                      disabled={deletingId === policy._id}
-                    >
-                      {deletingId === policy._id ? "Deleting…" : "Confirm"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingDeleteId(null)}
-                      disabled={deletingId === policy._id}
-                    >
-                      Cancel
-                    </button>
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    className="danger"
-                    onClick={() => setConfirmingDeleteId(policy._id)}
-                  >
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-          {!loading && policies.length === 0 && (
+      <div className="table-scroll">
+        <table className="data-table">
+          <thead>
             <tr>
-              <td colSpan={8}>No policies found.</td>
+              <th>Policy #</th>
+              <th>Holder</th>
+              <th>Type</th>
+              <th>Premium</th>
+              <th>Status</th>
+              <th>Effective</th>
+              <th>Expiration</th>
+              <th></th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {policies.map((policy) => (
+              <tr key={policy._id}>
+                <td>{policy.policyNumber}</td>
+                <td>{policy.holderName}</td>
+                <td>{POLICY_TYPE_LABELS[policy.type]}</td>
+                <td>{currencyFormatter.format(policy.premium)}</td>
+                <td>
+                  <StatusBadge
+                    label={POLICY_STATUS_LABELS[policy.status]}
+                    tone={POLICY_STATUS_TONE[policy.status]}
+                  />
+                </td>
+                <td>{dateFormatter.format(new Date(policy.effectiveDate))}</td>
+                <td>{dateFormatter.format(new Date(policy.expirationDate))}</td>
+                <td className="policies-table-actions">
+                  {confirmingDeleteId === policy._id ? (
+                    <span className="policy-delete-confirm">
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        onClick={() => handleDelete(policy._id)}
+                        disabled={deletingId === policy._id}
+                      >
+                        {deletingId === policy._id ? "Deleting…" : "Confirm"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => setConfirmingDeleteId(null)}
+                        disabled={deletingId === policy._id}
+                      >
+                        Cancel
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={() => setConfirmingDeleteId(policy._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {!loading && policies.length === 0 && (
+              <tr>
+                <td colSpan={8}>No policies found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {loading && <p>Loading policies…</p>}
 
