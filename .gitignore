@@ -144,3 +144,6 @@ vite.config.ts.timestamp-*
 
 # Claude
 .claude
+
+# Generated TLS certs (see generate-certs.sh) — never commit private keys
+certs/

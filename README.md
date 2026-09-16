@@ -6,12 +6,15 @@ An insurance Policy Claims Tracker — a line-of-business application for adjust
 
 ```text
 .
-├── backend-api/   # Express + MongoDB API (this is where you run npm commands)
-├── docs/          # Architecture and design documentation
+├── backend-api/               # Express + MongoDB API
+├── frontend-client/react-ts/  # React + TypeScript client (Vite)
+├── docs/                      # Architecture and design documentation
+├── docker-compose.yml         # Dev: run everything in containers over plain HTTP
+├── docker-compose.prod.yml    # Prod-like: adds HTTPS via a self-signed cert
 └── README.md
 ```
 
-All application code, `package.json`, and environment files live under [`backend-api/`](backend-api/). Every command below is run from that directory.
+The backend and frontend are separate npm projects with their own `package.json` and commands, run from their respective directories. Everything in the **Setup**/**npm scripts**/**API overview**/**Testing** sections below is for `backend-api/`; see [**Frontend**](#frontend) for the client. If you'd rather not install Node/MongoDB locally, see [**Running with Docker**](#running-with-docker) to run the whole stack in containers instead.
 
 ## Tech stack
 
@@ -28,6 +31,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit togeth
 
 - Node.js 20+
 - A running MongoDB instance (e.g. via Docker: `docker run -d -p 27017:27017 mongo:7`)
+
+> Prefer not to install Node/MongoDB at all? Skip straight to [**Running with Docker**](#running-with-docker) to run the whole stack (Mongo + API + client) in containers.
 
 ## Setup
 
@@ -118,3 +123,59 @@ npm test
 ```
 
 The suite includes pure unit tests (models validation, middleware, utilities) and DB-backed tests that run against a dedicated `policy-claims-test` MongoDB database — a local MongoDB instance must be reachable to run the full suite. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#testing) for details.
+
+## Frontend
+
+[`frontend-client/react-ts/`](frontend-client/react-ts/) is a React + TypeScript (Vite) client for the API above. See its [README](frontend-client/react-ts/README.md) for setup, routes, and auth flow — in short:
+
+```bash
+cd frontend-client/react-ts
+npm install
+npm run dev
+```
+
+The dev server proxies `/api/*` requests to the backend at `http://localhost:3000` (see `vite.config.ts`), so run `backend-api`'s dev server alongside it. No frontend-specific environment variables are required.
+
+## Running with Docker
+
+The whole stack (MongoDB, API, client) can also be run in containers instead of installing Node/MongoDB locally. Two Compose files are provided; both build `backend-api/Dockerfile` and `frontend-client/Dockerfile` and start a `mongo:7` container — pick one based on whether you want plain HTTP or HTTPS.
+
+### Option 1: `docker-compose.yml` — plain HTTP (quick dev)
+
+```bash
+docker compose up -d --build
+```
+
+| Service | URL |
+|---|---|
+| Client (React app) | http://localhost:4000 |
+| API | http://localhost:3000 |
+| MongoDB | localhost:27017 |
+
+The client container's nginx serves the built SPA and proxies `/api/*` to the `api` service, so the app works end-to-end at `http://localhost:4000` with no other setup. Set `JWT_SECRET` in your shell environment before starting if you don't want the insecure default (`dev-secret-change-me`).
+
+### Option 2: `docker-compose.prod.yml` — HTTPS via a self-signed cert
+
+Closer to a real deployment: nginx terminates TLS and redirects plain HTTP to HTTPS.
+
+1. Generate a self-signed cert (once; writes to `certs/`, which is gitignored):
+
+   ```bash
+   ./generate-certs.sh
+   ```
+
+2. Start the stack:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+
+| Service | URL |
+|---|---|
+| Client (HTTPS) | https://localhost:8443 |
+| Client (HTTP, redirects to HTTPS) | http://localhost:8080 |
+| API | not published to the host — reached by the client container only, at `api:3000` |
+
+The cert is self-signed for `localhost`, so browsers/`curl` will warn about it being untrusted (`curl -k` to skip verification). A request that hits port `8443` over plain HTTP (e.g. a stale bookmark) is redirected to HTTPS rather than failing.
+
+To stop either stack: `docker compose [-f docker-compose.prod.yml] down` (add `-v` to also drop the `mongo-data` volume and lose seeded data).

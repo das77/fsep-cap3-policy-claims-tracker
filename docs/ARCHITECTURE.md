@@ -4,7 +4,7 @@
 
 ## Overview
 
-A single Express application (`src/server.ts`) exposes a JSON REST API backed by MongoDB. There is no separate frontend in this repository — the API is designed to be consumed by a client application.
+A single Express application (`src/server.ts`) exposes a JSON REST API backed by MongoDB. A React client (`frontend-client/react-ts/`, documented separately in [its own README](../frontend-client/react-ts/README.md)) consumes this API; the two are developed and deployed independently, with the frontend's dev server proxying `/api` requests to this backend.
 
 ```mermaid
 flowchart TD
@@ -89,6 +89,24 @@ Models live in `src/models/` and are plain Mongoose schemas:
 - **`Claim`** — references a `Policy` and an `assignedTo` `User`; auto-generates a sequential `claimNumber` (`CLM-1000`, `CLM-1001`, …) in a `pre("save")` hook based on `countDocuments()`, and embeds `notes` as sub-documents (`{ author, text, createdAt }`).
 
 See [`DESIGN.md`](DESIGN.md) for the reasoning behind these choices, including an entity-relationship diagram of how the three models relate.
+
+## Containerized deployment
+
+Two Compose files at the repo root (`docker-compose.yml`, `docker-compose.prod.yml`) wrap the same three pieces — `mongo`, `api` (`backend-api/Dockerfile`), `client` (`frontend-client/Dockerfile`) — into containers; see the root [README](../README.md#running-with-docker) for how to run them. The main difference between the two is how the client is fronted:
+
+```mermaid
+flowchart LR
+    subgraph "docker-compose.yml (dev)"
+        B1["Browser :4000"] -->|HTTP| C1["client (nginx)"] -->|"/api/*"| A1["api :3000"]
+    end
+    subgraph "docker-compose.prod.yml (prod-like)"
+        B2["Browser :8443 / :8080"] -->|"HTTPS / HTTP→redirect"| C2["client (nginx + TLS)"] -->|"/api/*"| A2["api :3000 (not published)"]
+    end
+    C1 --> M1[("mongo")]
+    C2 --> M2[("mongo")]
+```
+
+In both cases nginx (baked from `frontend-client/nginx.conf` or, in prod, `nginx-ssl.conf` bind-mounted over it) serves the built SPA and proxies `/api/*` to the `api` service by Docker service name, so the browser only ever talks to one origin — the same shape as the Vite dev-server proxy used outside Docker. `docker-compose.prod.yml` additionally mounts a self-signed cert (`generate-certs.sh`) and does not publish the `api` port to the host at all, since only the `client` container needs to reach it.
 
 ## Testing
 
