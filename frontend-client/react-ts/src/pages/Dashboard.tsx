@@ -21,7 +21,7 @@ function policyNumber(policy: DashboardStats["recentClaims"][number]["policy"]):
 }
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,15 +64,7 @@ export default function Dashboard() {
 
   return (
     <section className="dashboard-page">
-      <header className="dashboard-header">
-        <h1>Welcome, {user.name}</h1>
-        <nav className="dashboard-nav">
-          <Link to="/claims">Claims</Link>
-          <button type="button" onClick={logout}>
-            Log out
-          </button>
-        </nav>
-      </header>
+      <h1>Dashboard</h1>
 
       {loading && <p>Loading dashboard…</p>}
 
