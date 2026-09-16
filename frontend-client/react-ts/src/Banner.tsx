@@ -8,12 +8,18 @@ export default function Banner() {
 
   return (
     <header className="app-banner">
-      <Link to="/" className="app-banner-title">
-        Welcome, {user.name}
-      </Link>
+      <div className="app-banner-identity">
+        <Link to="/" className="app-banner-title">
+          Welcome, {user.name}
+        </Link>
+        <span className="role-badge" data-role={user.role}>
+          {user.role}
+        </span>
+      </div>
       <nav className="app-banner-nav">
         <Link to="/">Dashboard</Link>
         <Link to="/claims">Claims</Link>
+        <Link to="/policies">Policies</Link>
         <button type="button" onClick={logout}>
           Log out
         </button>
