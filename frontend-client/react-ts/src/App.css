@@ -81,38 +81,56 @@
   text-align: left;
 }
 
-.dashboard-header {
+.dashboard-page h1 {
+  margin: 0 0 16px;
+  font-size: 28px;
+}
+
+.app-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding: 16px 40px;
+  background: #1e3a8a;
+  color: #fff;
 }
 
-.dashboard-header h1 {
-  margin: 0;
-  font-size: 28px;
-  text-align: left;
+.app-banner-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
 }
 
-.dashboard-nav {
+.app-banner-title:hover {
+  text-decoration: underline;
+}
+
+.app-banner-nav {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   margin-left: auto;
 }
 
-.dashboard-nav a {
-  color: var(--accent);
+.app-banner-nav a {
+  color: #fff;
+  font-weight: 500;
 }
 
-.dashboard-header button {
+.app-banner-nav button {
   font: inherit;
   padding: 8px 14px;
   border-radius: 6px;
-  border: 1px solid var(--border);
-  color: var(--text-h);
-  background: var(--bg);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  background: transparent;
   cursor: pointer;
+}
+
+.app-banner-nav button:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .stat-cards {
@@ -199,7 +217,7 @@
 }
 
 .recent-claims-table a {
-  color: var(--accent);
+  color: #2563eb;
 }
 
 .claims-page {
@@ -228,7 +246,7 @@
   border-radius: 6px;
   border: none;
   color: #fff;
-  background: var(--accent);
+  background: #0ea5e9;
   cursor: pointer;
 }
 
@@ -324,7 +342,7 @@
 }
 
 .claims-table a {
-  color: var(--accent);
+  color: #2563eb;
 }
 
 .pagination {
@@ -348,4 +366,169 @@
 .pagination button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.claim-detail-page {
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+  padding: 32px 40px;
+  text-align: left;
+}
+
+.claim-detail-back {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+
+.claim-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.claim-detail-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.claim-detail-page button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.claim-detail-page button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.claim-detail-page button.danger {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: transparent;
+}
+
+.claim-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.claim-detail-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 0 0 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.claim-detail-fields div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.claim-detail-fields dt {
+  font-size: 0.85em;
+  color: var(--text);
+}
+
+.claim-detail-fields dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.claim-description {
+  margin: 0 0 24px;
+}
+
+.claim-status-update {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.claim-status-update select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.claim-notes {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.claim-note {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.claim-note-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.claim-note-author {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.claim-note p {
+  margin: 0;
+}
+
+.claim-note-empty {
+  color: var(--text);
+}
+
+.add-note-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.add-note-form label {
+  font-weight: 600;
+}
+
+.add-note-form textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  background: var(--bg);
+  resize: vertical;
+}
+
+.add-note-form button {
+  align-self: flex-start;
+  color: #fff;
+  background: #0ea5e9;
+  border: none;
 }
