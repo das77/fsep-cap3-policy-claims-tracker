@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import api from "../api";
 import { getErrorMessage } from "../errorMessage";
 import { useAuth } from "../useAuth";
-import { CLAIM_STATUS_COLORS, CLAIM_STATUS_LABELS } from "../claimStatus";
+import StatusBadge from "../StatusBadge";
+import { CLAIM_STATUS_COLORS, CLAIM_STATUS_LABELS, CLAIM_STATUS_TONE } from "../claimStatus";
 import type { ClaimStatus, DashboardStats, Policy } from "../types";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -63,7 +64,7 @@ export default function Dashboard() {
     : 1;
 
   return (
-    <section className="dashboard-page">
+    <section className="page dashboard-page">
       <h1>Dashboard</h1>
 
       {loading && <p>Loading dashboard…</p>}
@@ -77,19 +78,19 @@ export default function Dashboard() {
       {stats && (
         <>
           <div className="stat-cards">
-            <div className="stat-card">
+            <div className="card stat-card">
               <span className="stat-card-label">Total Claims</span>
               <span className="stat-card-value">{stats.totalClaims}</span>
             </div>
-            <div className="stat-card">
+            <div className="card stat-card">
               <span className="stat-card-label">Total Policies</span>
               <span className="stat-card-value">{stats.totalPolicies}</span>
             </div>
-            <div className="stat-card">
+            <div className="card stat-card">
               <span className="stat-card-label">Total Users</span>
               <span className="stat-card-value">{stats.totalUsers}</span>
             </div>
-            <div className="stat-card">
+            <div className="card stat-card">
               <span className="stat-card-label">Total Claim Amount</span>
               <span className="stat-card-value">
                 {currencyFormatter.format(stats.totalClaimAmount)}
@@ -119,37 +120,44 @@ export default function Dashboard() {
           </div>
 
           <h2>Recent Claims</h2>
-          <table className="recent-claims-table">
-            <thead>
-              <tr>
-                <th>Claim #</th>
-                <th>Policy</th>
-                <th>Status</th>
-                <th>Amount</th>
-                <th>Filed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.recentClaims.map((claim) => (
-                <tr key={claim._id}>
-                  <td>
-                    <Link to={`/claims/${claim._id}`}>{claim.claimNumber}</Link>
-                  </td>
-                  <td>{policyNumber(claim.policy)}</td>
-                  <td>{CLAIM_STATUS_LABELS[claim.status]}</td>
-                  <td>
-                    {claim.amount != null ? currencyFormatter.format(claim.amount) : "—"}
-                  </td>
-                  <td>{dateFormatter.format(new Date(claim.createdAt))}</td>
-                </tr>
-              ))}
-              {stats.recentClaims.length === 0 && (
+          <div className="table-scroll">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <td colSpan={5}>No claims yet.</td>
+                  <th>Claim #</th>
+                  <th>Policy</th>
+                  <th>Status</th>
+                  <th>Amount</th>
+                  <th>Filed</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {stats.recentClaims.map((claim) => (
+                  <tr key={claim._id}>
+                    <td>
+                      <Link to={`/claims/${claim._id}`}>{claim.claimNumber}</Link>
+                    </td>
+                    <td>{policyNumber(claim.policy)}</td>
+                    <td>
+                      <StatusBadge
+                        label={CLAIM_STATUS_LABELS[claim.status]}
+                        tone={CLAIM_STATUS_TONE[claim.status]}
+                      />
+                    </td>
+                    <td>
+                      {claim.amount != null ? currencyFormatter.format(claim.amount) : "—"}
+                    </td>
+                    <td>{dateFormatter.format(new Date(claim.createdAt))}</td>
+                  </tr>
+                ))}
+                {stats.recentClaims.length === 0 && (
+                  <tr>
+                    <td colSpan={5}>No claims yet.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </section>

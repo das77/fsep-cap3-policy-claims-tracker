@@ -2,7 +2,8 @@ import { useEffect, useState, type SubmitEvent } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
 import { getErrorMessage } from "../errorMessage";
-import { CLAIM_STATUSES, CLAIM_STATUS_LABELS } from "../claimStatus";
+import StatusBadge from "../StatusBadge";
+import { CLAIM_STATUSES, CLAIM_STATUS_LABELS, CLAIM_STATUS_TONE } from "../claimStatus";
 import type { Claim, ClaimStatus, PaginatedClaims, Policy } from "../types";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -129,11 +130,12 @@ export default function Claims() {
   }
 
   return (
-    <section className="claims-page">
-      <header className="claims-header">
+    <section className="page claims-page">
+      <header className="page-header">
         <h1>Claims</h1>
         <button
           type="button"
+          className="btn btn-primary"
           onClick={() => setShowNewClaimForm((shown) => !shown)}
         >
           {showNewClaimForm ? "Cancel" : "New Claim"}
@@ -141,7 +143,7 @@ export default function Claims() {
       </header>
 
       {showNewClaimForm && (
-        <form className="new-claim-form" onSubmit={handleCreateClaim}>
+        <form className="card new-claim-form" onSubmit={handleCreateClaim}>
           <div className="new-claim-form-field">
             <label htmlFor="claim-policy">Policy</label>
             <select
@@ -201,7 +203,7 @@ export default function Claims() {
             </p>
           )}
 
-          <button type="submit" disabled={submitting}>
+          <button type="submit" className="btn" disabled={submitting}>
             {submitting ? "Creating…" : "Create Claim"}
           </button>
         </form>
@@ -242,37 +244,44 @@ export default function Claims() {
         </p>
       )}
 
-      <table className="claims-table">
-        <thead>
-          <tr>
-            <th>Claim #</th>
-            <th>Policy</th>
-            <th>Description</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Incident Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {claims.map((claim) => (
-            <tr key={claim._id}>
-              <td>
-                <Link to={`/claims/${claim._id}`}>{claim.claimNumber}</Link>
-              </td>
-              <td>{policyLabel(claim.policy, policiesById)}</td>
-              <td>{claim.description}</td>
-              <td>{claim.amount != null ? currencyFormatter.format(claim.amount) : "—"}</td>
-              <td>{CLAIM_STATUS_LABELS[claim.status]}</td>
-              <td>{dateFormatter.format(new Date(claim.incidentDate))}</td>
-            </tr>
-          ))}
-          {!loading && claims.length === 0 && (
+      <div className="table-scroll">
+        <table className="data-table">
+          <thead>
             <tr>
-              <td colSpan={6}>No claims found.</td>
+              <th>Claim #</th>
+              <th>Policy</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Incident Date</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {claims.map((claim) => (
+              <tr key={claim._id}>
+                <td>
+                  <Link to={`/claims/${claim._id}`}>{claim.claimNumber}</Link>
+                </td>
+                <td>{policyLabel(claim.policy, policiesById)}</td>
+                <td>{claim.description}</td>
+                <td>{claim.amount != null ? currencyFormatter.format(claim.amount) : "—"}</td>
+                <td>
+                  <StatusBadge
+                    label={CLAIM_STATUS_LABELS[claim.status]}
+                    tone={CLAIM_STATUS_TONE[claim.status]}
+                  />
+                </td>
+                <td>{dateFormatter.format(new Date(claim.incidentDate))}</td>
+              </tr>
+            ))}
+            {!loading && claims.length === 0 && (
+              <tr>
+                <td colSpan={6}>No claims found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {loading && <p>Loading claims…</p>}
 
