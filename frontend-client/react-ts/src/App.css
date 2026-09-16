@@ -96,6 +96,12 @@
   color: #fff;
 }
 
+.app-banner-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .app-banner-title {
   font-size: 22px;
   font-weight: 600;
@@ -105,6 +111,29 @@
 
 .app-banner-title:hover {
   text-decoration: underline;
+}
+
+.role-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.role-badge[data-role='admin'] {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #1e293b;
+}
+
+.role-badge[data-role='adjuster'] {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #0c2a3d;
 }
 
 .app-banner-nav {
@@ -531,4 +560,169 @@
   color: #fff;
   background: #0ea5e9;
   border: none;
+}
+
+.policies-page {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 32px 40px;
+  text-align: left;
+}
+
+.policies-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.policies-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.policies-header button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  background: #0ea5e9;
+  cursor: pointer;
+}
+
+.new-policy-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: end;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.new-policy-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.new-policy-form-field label {
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.new-policy-form input,
+.new-policy-form select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.new-policy-form .form-error {
+  grid-column: 1 / -1;
+}
+
+.new-policy-form button[type='submit'] {
+  font: inherit;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.new-policy-form button[type='submit']:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.policies-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.policies-filters select,
+.policies-filters input {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.policies-filters input[type='search'] {
+  flex: 1;
+  min-width: 200px;
+}
+
+.policies-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.policies-table th,
+.policies-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.policies-table th {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+.policies-table-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.policies-table button {
+  font: inherit;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.policies-table button.danger {
+  border-color: #c0392b;
+  color: #c0392b;
+  background: transparent;
+}
+
+.policies-table button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.policy-delete-confirm {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.app-content {
+  flex: 1 0 auto;
+}
+
+.app-footer {
+  flex-shrink: 0;
+  padding: 16px 40px;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.85em;
+  text-align: center;
 }
