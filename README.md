@@ -6,12 +6,13 @@ An insurance Policy Claims Tracker — a line-of-business application for adjust
 
 ```text
 .
-├── backend-api/   # Express + MongoDB API (this is where you run npm commands)
-├── docs/          # Architecture and design documentation
+├── backend-api/               # Express + MongoDB API
+├── frontend-client/react-ts/  # React + TypeScript client (Vite)
+├── docs/                      # Architecture and design documentation
 └── README.md
 ```
 
-All application code, `package.json`, and environment files live under [`backend-api/`](backend-api/). Every command below is run from that directory.
+The backend and frontend are separate npm projects with their own `package.json` and commands, run from their respective directories. Everything in the **Setup**/**npm scripts**/**API overview**/**Testing** sections below is for `backend-api/`; see [**Frontend**](#frontend) for the client.
 
 ## Tech stack
 
@@ -118,3 +119,15 @@ npm test
 ```
 
 The suite includes pure unit tests (models validation, middleware, utilities) and DB-backed tests that run against a dedicated `policy-claims-test` MongoDB database — a local MongoDB instance must be reachable to run the full suite. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#testing) for details.
+
+## Frontend
+
+[`frontend-client/react-ts/`](frontend-client/react-ts/) is a React + TypeScript (Vite) client for the API above. See its [README](frontend-client/react-ts/README.md) for setup, routes, and auth flow — in short:
+
+```bash
+cd frontend-client/react-ts
+npm install
+npm run dev
+```
+
+The dev server proxies `/api/*` requests to the backend at `http://localhost:3000` (see `vite.config.ts`), so run `backend-api`'s dev server alongside it. No frontend-specific environment variables are required.
