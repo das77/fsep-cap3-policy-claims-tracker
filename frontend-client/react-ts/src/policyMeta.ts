@@ -15,3 +15,10 @@ export const POLICY_STATUS_LABELS: Record<PolicyStatus, string> = {
   expired: "Expired",
   cancelled: "Cancelled",
 };
+
+/** Semantic tone for each status — drives badge color. */
+export const POLICY_STATUS_TONE: Record<PolicyStatus, string> = {
+  active: "success",
+  expired: "neutral",
+  cancelled: "danger",
+};
