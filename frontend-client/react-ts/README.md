@@ -19,6 +19,8 @@ npm run dev
 
 This starts the Vite dev server (prints the local URL, typically `http://localhost:5173`). It proxies any `/api/*` request to `http://localhost:3000` (see `vite.config.ts`), so the [`backend-api`](../../backend-api/) dev server must be running separately (`cd ../../backend-api && npm run dev`) with a reachable MongoDB instance — **and its `PORT` must be `3000`** (the backend defaults to `5000` if `PORT` is unset in its `.env`; the proxy target here is hardcoded, not configurable via env var). No frontend-specific environment variables are needed — the API base URL is always the relative `/api`.
 
+Alternatively, run this client (and the API + MongoDB) in Docker instead of installing anything locally — see the root [README](../../README.md#running-with-docker). `frontend-client/Dockerfile` builds this app with Vite and serves it via nginx, which also handles the `/api/*` proxy that `vite.config.ts` handles in dev.
+
 To log in, use one of the accounts created by the backend's `npm run seed` (e.g. `admin@policyclaims.com` / `Admin123!`), or register a new account from `/register`.
 
 ## npm scripts
