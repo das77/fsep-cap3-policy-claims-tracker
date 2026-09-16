@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Claims from './pages/Claims'
+import ClaimDetail from './pages/ClaimDetail'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ProtectedRoute from './ProtectedRoute'
@@ -22,6 +23,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Claims />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/claims/:id"
+        element={
+          <ProtectedRoute>
+            <ClaimDetail />
           </ProtectedRoute>
         }
       />
