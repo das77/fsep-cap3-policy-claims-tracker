@@ -3,23 +3,8 @@ import { Link } from "react-router-dom";
 import api from "../api";
 import { getErrorMessage } from "../errorMessage";
 import { useAuth } from "../useAuth";
+import { CLAIM_STATUS_COLORS, CLAIM_STATUS_LABELS } from "../claimStatus";
 import type { ClaimStatus, DashboardStats, Policy } from "../types";
-
-const CLAIM_STATUS_LABELS: Record<ClaimStatus, string> = {
-  submitted: "Submitted",
-  "under-review": "Under Review",
-  approved: "Approved",
-  denied: "Denied",
-  closed: "Closed",
-};
-
-const CLAIM_STATUS_COLORS: Record<ClaimStatus, string> = {
-  submitted: "#3b82f6",
-  "under-review": "#f59e0b",
-  approved: "#22c55e",
-  denied: "#dc2626",
-  closed: "#6b7280",
-};
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -36,7 +21,7 @@ function policyNumber(policy: DashboardStats["recentClaims"][number]["policy"]):
 }
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,12 +64,7 @@ export default function Dashboard() {
 
   return (
     <section className="dashboard-page">
-      <header className="dashboard-header">
-        <h1>Welcome, {user.name}</h1>
-        <button type="button" onClick={logout}>
-          Log out
-        </button>
-      </header>
+      <h1>Dashboard</h1>
 
       {loading && <p>Loading dashboard…</p>}
 
