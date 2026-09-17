@@ -23,7 +23,15 @@ RUN npm run build
 FROM nginx:alpine AS runtime
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Deployed as a template (not straight into conf.d) so the base image's
+# entrypoint can substitute ${NGINX_LOCAL_RESOLVERS} — see the comment above
+# the `resolver` directive in nginx.conf for why.
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+# Docker Compose service name; override to the Kubernetes Service's FQDN
+# (api.<namespace>.svc.cluster.local:3000) when deploying there.
+ENV API_UPSTREAM=api:3000
 
 EXPOSE 80
 
