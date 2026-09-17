@@ -106,7 +106,31 @@ flowchart LR
     C2 --> M2[("mongo")]
 ```
 
-In both cases nginx (baked from `frontend-client/nginx.conf` or, in prod, `nginx-ssl.conf` bind-mounted over it) serves the built SPA and proxies `/api/*` to the `api` service by Docker service name, so the browser only ever talks to one origin — the same shape as the Vite dev-server proxy used outside Docker. `docker-compose.prod.yml` additionally mounts a self-signed cert (`generate-certs.sh`) and does not publish the `api` port to the host at all, since only the `client` container needs to reach it.
+In both cases nginx (baked from `frontend-client/nginx.conf` or, in prod, `nginx-ssl.conf` bind-mounted over it) serves the built SPA and proxies `/api/*` to the `api` service, so the browser only ever talks to one origin — the same shape as the Vite dev-server proxy used outside Docker. `docker-compose.prod.yml` additionally mounts a self-signed cert (`generate-certs.sh`) and does not publish the `api` port to the host at all, since only the `client` container needs to reach it.
+
+Both nginx configs are deployed as `/etc/nginx/templates/*.template` (not copied straight into `conf.d`), so the base nginx image's entrypoint can `envsubst` two values into them at container startup, rather than hardcoding Docker-Compose-specific behavior that would break elsewhere:
+
+- `resolver ${NGINX_LOCAL_RESOLVERS}` — read from the container's own `/etc/resolv.conf` (Docker's embedded DNS under Compose, CoreDNS under Kubernetes) instead of a hardcoded `127.0.0.11`, which doesn't exist outside Compose.
+- `set $backend_upstream ${API_UPSTREAM}` — the API's address, since nginx's built-in resolver does its own DNS queries and, unlike glibc/musl, doesn't apply `/etc/resolv.conf`'s search domains — so a bare `api` hostname that Docker's DNS resolves fine fails against CoreDNS, which needs the fully-qualified Service name. Defaults to `api:3000` (the Dockerfile `ENV`, correct for Compose); overridden per-deployment where it isn't (see `k8s/client.yaml` below).
+
+## Kubernetes deployment
+
+`k8s/` mirrors the same three pieces as a third deployment option, in a dedicated `policy-claims` namespace; see the root [README](../README.md#running-on-kubernetes) for how to run it.
+
+```mermaid
+flowchart LR
+    B["Browser :30080"] -->|HTTP| C["client Deployment (nginx)<br/>Service: NodePort 30080→80"]
+    C -->|"/api/* → api.policy-claims.svc.cluster.local:3000"| A["api Deployment (2 replicas)<br/>Service: ClusterIP 3000"]
+    A --> M["mongo Deployment<br/>Service: ClusterIP 27017"]
+    M --> PVC[("PVC: 1Gi RWO<br/>/data/db")]
+```
+
+Differences from the Compose setup, beyond the resolver/upstream substitution above:
+
+- **Config via Secret, not compose `environment:`.** `api`'s Deployment loads `PORT`, `NODE_ENV`, `JWT_SECRET`, `MONGODB_URI` from a single `policy-claims-secrets` Secret via `envFrom`. `k8s/secrets.yaml` in the repo is a placeholder-only template (real values are never committed) — the live Secret is created imperatively (`kubectl create secret ... --from-literal=...`), and since env vars are only injected at container start, changing the Secret later requires `kubectl rollout restart deployment/api` to take effect.
+- **Health probes are load-bearing.** `api`'s readiness probe (`GET /api/health`, 5s initial delay / 10s period) gates whether a replica receives traffic at all — relevant since it runs 2 replicas here versus 1 `api` container under Compose — and the liveness probe (same endpoint, 10s/30s) restarts a replica that stops responding.
+- **`imagePullPolicy: Never` on both `api` and `client`.** Neither Deployment pulls from a registry; images must already exist on the node under the exact tag referenced (`p3-capstone-api:latest`, `p3-capstone-client:latest`), which works out of the box on Docker Desktop since its Kubernetes node shares the host's Docker image store.
+- **Mongo's PVC ties it to `strategy: Recreate`.** The Deployment (not a StatefulSet, since this is a single-replica dev setup) sets `strategy: Recreate` so Kubernetes fully terminates the old pod — releasing the `ReadWriteOnce` PVC — before starting a replacement, rather than attempting the default rolling update, which would try to schedule a second pod against a volume the first one still holds.
 
 ## Testing
 
