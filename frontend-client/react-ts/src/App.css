@@ -224,6 +224,12 @@
   gap: var(--space-3);
 }
 
+.app-banner-brand {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .app-banner-title {
   font-size: 22px;
   font-weight: 600;

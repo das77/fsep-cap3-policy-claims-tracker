@@ -9,6 +9,7 @@ export default function Banner() {
   return (
     <header className="app-banner">
       <div className="app-banner-identity">
+        <span className="app-banner-brand">Policy Claims Tracker</span>
         <Link to="/" className="app-banner-title">
           Welcome, {user.name}
         </Link>
