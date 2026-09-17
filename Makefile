@@ -1,4 +1,4 @@
-.PHONY: dev dev-api dev-client install install-api install-client
+.PHONY: dev dev-seed dev-api dev-client install install-api install-client seed
 
 # Run both dev servers together. Ctrl-C stops both — the trap kills every
 # job in this recipe's process group on exit, so one doesn't linger after
@@ -8,6 +8,10 @@ dev:
 	(cd backend-api && npm run dev) & \
 	(cd frontend-client/react-ts && npm run dev) & \
 	wait
+
+## Reset/repopulate the database, then run both dev servers together.
+## Plain `dev` is left alone so repeated runs don't wipe your data.
+dev-seed: seed dev
 
 ## Run just the backend API dev server.
 dev-api:
@@ -25,3 +29,8 @@ install-api:
 
 install-client:
 	cd frontend-client/react-ts && npm install
+
+## Reset and repopulate the local database with sample users/policies/claims.
+## Requires a MongoDB instance reachable per backend-api/.env's MONGODB_URI.
+seed:
+	cd backend-api && npm run seed
