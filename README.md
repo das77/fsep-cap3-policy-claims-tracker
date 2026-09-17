@@ -3,6 +3,7 @@
 An insurance Policy Claims Tracker — a line-of-business application for adjusters and administrators to manage insurance policies and the claims filed against them.
 
 <!-- PAGES-LINK:START -->
+📖 **[Documentation site](https://das77.github.io/fsep-cap3-policy-claims-tracker/)** — architecture & design docs, published from `docs/` via GitHub Pages.
 <!-- PAGES-LINK:END -->
 
 ## Project layout
