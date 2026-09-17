@@ -80,6 +80,45 @@ sequenceDiagram
     R-->>C: 200 (req.user attached) or 401
 ```
 
+## End-to-end login data flow
+
+The auth flow above starts at `POST /login` — this traces the same request one layer further out, from the click in the browser down to MongoDB and back, to show how the frontend (`frontend-client/react-ts/`) and this backend fit together across the proxy in between.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant L as Login.tsx
+    participant Ax as api.ts (axios)
+    participant P as Proxy (Vite dev-server / nginx)
+    participant Rt as auth routes (src/routes/auth.ts)
+    participant M as User model (Mongoose)
+    participant DB as MongoDB
+
+    U->>L: click "Log in"
+    L->>L: handleSubmit: event.preventDefault(), setError(null)
+    L->>Ax: login(email, password)
+    Ax->>P: POST /api/auth/login { email, password }
+    P->>Rt: forwards to http://api:3000/api/auth/login (same path)
+    Rt->>Rt: validate([...]) — 400 short-circuit on bad input
+    Rt->>M: findOne({ email }) then comparePassword()
+    M->>DB: query users collection
+    DB-->>M: matching document (or none)
+    M-->>Rt: match / no match
+    Rt-->>P: 200 { token, expiresAt, user } or 401
+    P-->>Ax: same response, relayed
+    Ax-->>L: resolved promise (or thrown AxiosError)
+    L->>L: localStorage.setItem(token), setItem(user)
+    L->>U: navigate("/") — Dashboard renders as the now-authenticated user
+```
+
+A few things worth calling out at each hop:
+
+- **`Login.tsx`** only owns form state (`email`/`password`/`error`) and delegates the actual request to `AuthContext`'s `login()` — the component itself never touches `localStorage` or axios directly.
+- **`api.ts`**'s shared axios instance is what actually calls the network; its `baseURL` is always the relative `/api`, so the frontend never hardcodes a host — that's entirely the proxy's job (Vite's dev-server proxy locally, nginx's `/api/` `location` block under Docker/Kubernetes — see [Containerized deployment](#containerized-deployment) and [Kubernetes deployment](#kubernetes-deployment) above).
+- **The proxy is a pure pass-through for this route** — it doesn't add or check auth itself; `/api/auth/login` is one of the two routes (with `/api/auth/register`) that skip the `authenticate` middleware entirely (see [Request pipeline](#request-pipeline)).
+- **On success**, `AuthContext.login()` (not `Login.tsx`) writes `token`/`user` to `localStorage` and updates React state — that state change is what makes `ProtectedRoute` stop redirecting to `/login` on the next render, which is why `navigate("/")` immediately after `login()` resolves lands on a page that renders instead of bouncing back.
+- **On failure**, the rejected promise propagates back up to `Login.tsx` unchanged; `getErrorMessage()` extracts a display string from the Axios error, and nothing is written to `localStorage`.
+
 ## Data layer
 
 Models live in `src/models/` and are plain Mongoose schemas:
