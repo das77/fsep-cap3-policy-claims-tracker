@@ -2,6 +2,9 @@
 
 An insurance Policy Claims Tracker — a line-of-business application for adjusters and administrators to manage insurance policies and the claims filed against them.
 
+<!-- PAGES-LINK:START -->
+<!-- PAGES-LINK:END -->
+
 ## Project layout
 
 ```text
