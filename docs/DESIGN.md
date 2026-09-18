@@ -116,6 +116,196 @@ stateDiagram-v2
 - **`GET /api/claims/stats` is registered before `GET /api/claims/:id`** — otherwise Express would match `/stats` as an `:id` param and route it to the wrong handler.
 - **Dashboard vs. per-resource stats.** `/api/claims/stats` and `/api/dashboard` overlap (both surface claims-by-status and totals) by design: `/claims/stats` is scoped to claims for a claims-focused view, while `/dashboard` aggregates across claims, policies, and users for an at-a-glance summary. Duplicating the small aggregation pipeline was judged simpler than building a shared abstraction for two call sites.
 
+### API reference
+
+All routes are mounted under `/api` (see `src/server.ts`). "Auth" is `Authorization: Bearer <token>` via the `authenticate` middleware, which loads the user by the token's `id` and 401s on a missing/invalid/expired token. Every body/query field below is enforced by an `express-validator` chain in the route (`src/routes/*.ts`) before the handler runs — a failing chain returns `400` with a `message`/`errors` list from the shared `validate` middleware, not the handler's own logic.
+
+#### Health
+
+| | |
+|---|---|
+| **`GET /api/health`** | Auth: none |
+
+No parameters. Returns `{ status: "ok" \| "error", db: "connected" \| "disconnected" \| "connecting" \| "disconnecting" \| "unknown" }`, `503` when `db` isn't `"connected"`.
+
+#### Auth (`/api/auth`)
+
+| | |
+|---|---|
+| **`POST /api/auth/register`** | Auth: none |
+
+Body:
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `name` | string | yes | non-empty (trimmed) |
+| `email` | string | yes | valid email; normalized (lowercased) |
+| `password` | string | yes | min 8 chars |
+| `role` | `"adjuster" \| "admin"` | no | defaults to `adjuster` |
+
+`409` if `email` is already registered. `201` with `{ user }` (no token — log in separately).
+
+| | |
+|---|---|
+| **`POST /api/auth/login`** | Auth: none |
+
+Body: `email` (string, required, valid email), `password` (string, required, non-empty).
+
+`401` on no matching user or wrong password. `200` with `{ token, expiresAt, user }`.
+
+| | |
+|---|---|
+| **`GET /api/auth/me`** | Auth: required |
+
+No parameters. Returns `{ user }` for the authenticated token.
+
+#### Policies (`/api/policies`)
+
+| | |
+|---|---|
+| **`GET /api/policies`** | Auth: required |
+
+Query params (all optional):
+
+| Param | Type | Constraints |
+|---|---|---|
+| `type` | string | one of `auto`, `home`, `life` |
+| `status` | string | one of `active`, `expired`, `cancelled` |
+| `search` | string | case-insensitive match against `holderName` or `policyNumber` |
+| `page` | integer | `>= 1`; defaults to `1` |
+| `limit` | integer | `1`-`100`; defaults to `10` |
+
+Returns `{ policies, pagination: { page, limit, total, pages } }`, sorted by `createdAt` descending.
+
+| | |
+|---|---|
+| **`GET /api/policies/:id`** | Auth: required |
+
+Path: `id` (MongoDB ObjectId, required). `404` if not found. Returns `{ policy }` with `owner` populated (password excluded).
+
+| | |
+|---|---|
+| **`POST /api/policies`** | Auth: required |
+
+Body:
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `policyNumber` | string | yes | non-empty (trimmed) |
+| `holderName` | string | yes | non-empty (trimmed) |
+| `type` | string | yes | one of `auto`, `home`, `life` |
+| `premium` | number | yes | `>= 0` |
+| `status` | string | yes | one of `active`, `expired`, `cancelled` |
+| `effectiveDate` | string | yes | ISO 8601 date |
+| `expirationDate` | string | yes | ISO 8601 date |
+
+`owner` is set to the authenticated user, not accepted from the body. `409` on a duplicate `policyNumber`. `201` with `{ policy }`.
+
+| | |
+|---|---|
+| **`PUT /api/policies/:id`** | Auth: required |
+
+Path: `id` (ObjectId, required). Body: same fields as `POST`, all optional (each still validated when present). `404` if not found. Returns `{ policy }`.
+
+| | |
+|---|---|
+| **`DELETE /api/policies/:id`** | Auth: required |
+
+Path: `id` (ObjectId, required). `404` if not found, else `204` with no body.
+
+#### Claims (`/api/claims`)
+
+| | |
+|---|---|
+| **`GET /api/claims`** | Auth: required |
+
+Query params (all optional):
+
+| Param | Type | Constraints |
+|---|---|---|
+| `status` | string | one of `submitted`, `under-review`, `approved`, `denied`, `closed` |
+| `policy` | string | MongoDB ObjectId |
+| `assignedTo` | string | MongoDB ObjectId |
+| `search` | string | case-insensitive match against `claimNumber` or `description` |
+| `page` | integer | `>= 1`; defaults to `1` |
+| `limit` | integer | `1`-`100`; defaults to `10` |
+
+Returns `{ claims, pagination: { page, limit, total, pages } }`, sorted by `createdAt` descending.
+
+| | |
+|---|---|
+| **`GET /api/claims/stats`** | Auth: required |
+
+No parameters. Returns `{ totalClaims, totalAmount, byStatus: { submitted, "under-review", approved, denied, closed } }` (every status key present, `0` if unused). Registered before `/:id` so it isn't swallowed by the `:id` param route.
+
+| | |
+|---|---|
+| **`GET /api/claims/:id`** | Auth: required |
+
+Path: `id` (ObjectId, required). `404` if not found. Returns `{ claim }` with `policy` fully populated and `assignedTo` populated (password excluded).
+
+| | |
+|---|---|
+| **`POST /api/claims`** | Auth: required |
+
+Body:
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `policy` | string | yes | MongoDB ObjectId |
+| `description` | string | yes | non-empty (trimmed) |
+| `incidentDate` | string | yes | ISO 8601 date |
+| `amount` | number | no | `>= 0` |
+
+`claimNumber` is auto-generated and `assignedTo` is set to the authenticated user; neither is accepted from the body. `status` defaults to `submitted` and can't be set on create. `201` with `{ claim }`.
+
+| | |
+|---|---|
+| **`PUT /api/claims/:id`** | Auth: required |
+
+Path: `id` (ObjectId, required). Body (all optional):
+
+| Field | Type | Constraints |
+|---|---|---|
+| `policy` | string | MongoDB ObjectId |
+| `description` | string | non-empty (trimmed) |
+| `incidentDate` | string | ISO 8601 date |
+| `amount` | number | `>= 0` |
+| `status` | string | one of `submitted`, `under-review`, `approved`, `denied`, `closed` |
+| `assignedTo` | string | MongoDB ObjectId |
+
+No transition rules are enforced — any valid `status` value is accepted regardless of the claim's current status (see [Known tradeoff](#claim) above). `404` if not found. Returns `{ claim }`.
+
+| | |
+|---|---|
+| **`POST /api/claims/:id/notes`** | Auth: required |
+
+Path: `id` (ObjectId, required). Body: `text` (string, required, non-empty, trimmed). Appends `{ author: <authenticated user>, text, createdAt: now }` to the claim's embedded `notes` array. `404` if the claim isn't found. `201` with `{ claim }` (full claim, including the new note).
+
+| | |
+|---|---|
+| **`DELETE /api/claims/:id`** | Auth: required |
+
+Path: `id` (ObjectId, required). `404` if not found, else `204` with no body.
+
+#### Dashboard (`/api/dashboard`)
+
+| | |
+|---|---|
+| **`GET /api/dashboard`** | Auth: required |
+
+No parameters. Returns:
+
+| Field | Description |
+|---|---|
+| `totalClaims` | Count of all claims |
+| `claimsByStatus` | `{ submitted, "under-review", approved, denied, closed }` (all keys present, `0` if unused) |
+| `totalPolicies` | Count of all policies |
+| `policiesByType` | `{ auto, home, life }` (all keys present, `0` if unused) |
+| `totalUsers` | Count of all users |
+| `recentClaims` | Most recent 5 claims, `policy` fully populated and `assignedTo` populated (password excluded) |
+| `totalClaimAmount` | Sum of `amount` across all claims (`0`-valued/missing amounts treated as `0`) |
+
 ## Security & auth
 
 - **JWT payload is intentionally minimal** — just `{ id, role }` — to keep tokens small and avoid embedding data that could go stale (e.g. `name`/`email`) before the token expires. Anything else needed is fetched fresh via `authenticate` looking up the user by id on every request.
