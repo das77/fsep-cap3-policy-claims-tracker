@@ -39,6 +39,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit togeth
 
 > Prefer not to install Node/MongoDB at all? Skip straight to [**Running with Docker**](#running-with-docker) to run the whole stack (Mongo + API + client) in containers.
 
+> Once both projects' dependencies are installed and `backend-api/.env` is set up (steps 1-2 below), `make dev` runs the backend and frontend dev servers together from the repo root, and `make dev-seed` resets/reseeds the database first. See the [`Makefile`](Makefile) for the full list of targets.
+
 ## Setup
 
 1. Move into the app directory and install dependencies:
@@ -66,6 +68,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit togeth
    npm run seed
    ```
 
+   (or, from the repo root: `make seed`)
+
    This clears existing `User`/`Policy`/`Claim` data and inserts:
    - 3 users — 1 admin (`admin@policyclaims.com`), 2 adjusters (`alice@policyclaims.com`, `bob@policyclaims.com`), password `Admin123!` / `Password123!` respectively
    - 5 policies across auto/home/life types and active/expired/cancelled statuses
@@ -85,6 +89,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit togeth
    ```bash
    npm run dev
    ```
+
+   (or, from the repo root: `make dev` to also start the frontend dev server alongside it, or `make dev-seed` to reseed the database first)
 
 ## npm scripts
 
@@ -139,7 +145,7 @@ npm install
 npm run dev
 ```
 
-The dev server proxies `/api/*` requests to the backend at `http://localhost:3000` (see `vite.config.ts`), so run `backend-api`'s dev server alongside it. No frontend-specific environment variables are required.
+The dev server proxies `/api/*` requests to the backend at `http://localhost:3000` (see `vite.config.ts`), so run `backend-api`'s dev server alongside it — or just run `make dev` from the repo root to start both together. No frontend-specific environment variables are required.
 
 ## Running with Docker
 
